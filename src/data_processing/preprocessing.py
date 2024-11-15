@@ -120,3 +120,36 @@ def add_moving_averages(data, symbols, windows=[10, 50, 200]):
     print(f"Taille du DataFrame amélioré : {enhanced_data.shape}")
 
     return enhanced_data
+
+
+def remove_high_and_open_and_low(data, symbols):
+    """
+    Supprime les colonnes 'High' et 'Open' tout en conservant toutes les colonnes restantes.
+
+    Args:
+    - data (pd.DataFrame): DataFrame combiné contenant les données des actions.
+    - symbols (list): Liste des symboles des actions.
+
+    Returns:
+    - pd.DataFrame: DataFrame sans les colonnes 'High' et 'Open', avec toutes les autres colonnes conservées.
+    """
+    # Créer une copie du DataFrame d'origine pour préserver toutes les colonnes restantes
+    cleaned_data = data.copy()
+
+    # Supprimer les colonnes 'High' et 'Open' pour chaque ticker
+    for ticker in symbols:
+        print(f"Suppression des colonnes 'High' et 'Open' pour {ticker}...")
+        try:
+            # Supprimer les colonnes 'High' et 'Open' si elles existent
+            columns_to_remove = [(ticker, 'High'), (ticker, 'Open'), (ticker, 'Low')]
+            columns_to_remove = [col for col in columns_to_remove if col in cleaned_data.columns]
+            cleaned_data = cleaned_data.drop(columns=columns_to_remove, axis=1)
+        except KeyError:
+            print(f"Colonnes manquantes pour {ticker}. Aucune suppression nécessaire.")
+
+    # Afficher un aperçu des données finales
+    print("Aperçu des données après suppression des colonnes 'High' et 'Open' :")
+    print(cleaned_data.head())
+    print(f"Taille du DataFrame nettoyé : {cleaned_data.shape}")
+
+    return cleaned_data
