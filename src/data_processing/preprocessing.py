@@ -1,0 +1,122 @@
+import yfinance as yf
+import pandas as pd
+import numpy as np
+
+def prepare_stock_data(symbols, start_date, end_date):
+    """
+    Télécharge et prépare les données boursières pour une liste de symboles.
+    
+    Args:
+    - symbols (list): Liste des symboles des actions.
+    - start_date (str): Date de début au format 'YYYY-MM-DD'.
+    - end_date (str): Date de fin au format 'YYYY-MM-DD'.
+    
+    Returns:
+    - pd.DataFrame: Un DataFrame combiné avec les données traitées.
+    """
+    data = {}
+
+    # Télécharger les données pour chaque symbole
+    for ticker in symbols:
+        print(f"Téléchargement des données pour {ticker}...")
+        stock_data = yf.download(ticker, start=start_date, end=end_date)
+        data[ticker] = stock_data
+
+    # Combiner les données de toutes les actions en un seul DataFrame
+    combined_data = pd.concat(data, axis=1)
+    
+    # Compter les valeurs manquantes initiales
+    first_non_nan_index = combined_data.apply(lambda col: col.first_valid_index())
+    num_missing_start = combined_data.index.get_loc(first_non_nan_index.min())
+    print(f"Nombre de valeurs manquantes au début : {num_missing_start}")
+    
+    # 1. Interpolation pour les valeurs manquantes intermédiaires
+    combined_data = combined_data.interpolate(method='linear')
+
+    # 2. Forward fill pour les valeurs manquantes au début
+    combined_data = combined_data.ffill()
+
+    # 3. Backward fill pour les valeurs manquantes à la fin
+    combined_data = combined_data.bfill()
+
+    # Vérification finale
+    missing_values = combined_data.isnull().sum().sum()
+    print(f"Nombre total de valeurs manquantes après traitement: {missing_values}")
+    
+    return combined_data
+
+
+def add_log_returns_and_volume(data, symbols):
+    """
+    Calcule les log returns et conserve toutes les colonnes d'origine dans un DataFrame combiné.
+    
+    Args:
+    - combined_data (pd.DataFrame): DataFrame combiné contenant les données des actions.
+    - symbols (list): Liste des symboles des actions.
+    
+    Returns:
+    - pd.DataFrame: DataFrame avec les colonnes d'origine, les log returns et les volumes par action.
+    """
+    # Créer une copie du DataFrame d'origine pour préserver toutes les colonnes
+    enhanced_data = data.copy()
+    
+    # Calculer les log returns et ajouter les volumes
+    for ticker in symbols:
+        print(f"Calcul des log returns et du volume pour {ticker}...")
+        try:
+            # Calcul du log return
+            enhanced_data[(ticker, 'Log Return')] = np.log(
+                data[(ticker, 'Adj Close')] / data[(ticker, 'Adj Close')].shift(1)
+            )
+            # Ajouter les volumes (si déjà présents, ils resteront inchangés)
+            if (ticker, 'Volume') not in enhanced_data.columns:
+                enhanced_data[(ticker, 'Volume')] = data[(ticker, 'Volume')]
+        except KeyError:
+            print(f"Données manquantes pour {ticker}. Vérifiez le DataFrame source.")
+    
+    # Supprimer les lignes contenant des valeurs NaN résultant des calculs
+    enhanced_data = enhanced_data.dropna()
+    
+    # Afficher un aperçu des données finales
+    print("Aperçu des données avec log returns et colonnes conservées :")
+    print(enhanced_data.head())
+    print(f"Taille du DataFrame amélioré : {enhanced_data.shape}")
+    
+    return enhanced_data
+
+def add_moving_averages(data, symbols, windows=[10, 50, 200]):
+    """
+    Calcule les moyennes mobiles et conserve toutes les colonnes d'origine dans un DataFrame combiné.
+
+    Args:
+    - data (pd.DataFrame): DataFrame combiné contenant les données des actions.
+    - symbols (list): Liste des symboles des actions.
+    - windows (list): Liste des périodes pour lesquelles calculer les moyennes mobiles (par défaut : [10, 50, 200]).
+
+    Returns:
+    - pd.DataFrame: DataFrame avec les colonnes d'origine et les moyennes mobiles ajoutées.
+    """
+    # Créer une copie du DataFrame d'origine pour préserver toutes les colonnes
+    enhanced_data = data.copy()
+
+    # Calculer les moyennes mobiles pour chaque symbole et chaque fenêtre
+    for ticker in symbols:
+        print(f"Calcul des moyennes mobiles pour {ticker}...")
+        try:
+            for window in windows:
+                # Ajouter la moyenne mobile avec une nouvelle colonne
+                enhanced_data[(ticker, f'SMA_{window}')] = (
+                    data[(ticker, 'Adj Close')].rolling(window=window).mean()
+                )
+        except KeyError:
+            print(f"Données manquantes pour {ticker}. Vérifiez le DataFrame source.")
+
+    # Supprimer les lignes contenant des NaN résultant des calculs de rolling
+    enhanced_data = enhanced_data.dropna()
+
+    # Afficher un aperçu des données finales
+    print("Aperçu des données avec moyennes mobiles et colonnes conservées :")
+    print(enhanced_data.head())
+    print(f"Taille du DataFrame amélioré : {enhanced_data.shape}")
+
+    return enhanced_data

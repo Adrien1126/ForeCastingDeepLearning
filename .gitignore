@@ -1,0 +1,9 @@
+# Ignorer les fichiers système
+.DS_Store
+
+# Ignorer les checkpoints Jupyter
+.ipynb_checkpoints/
+
+# Ignorer tout fichier compilé ou temporaire
+*.pyc
+__pycache__/
