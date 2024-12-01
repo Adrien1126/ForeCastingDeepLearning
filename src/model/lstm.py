@@ -1,35 +1,41 @@
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 
-# Function to create dataset matrix
-def create_dataset(dataset, look_back=1):
+# Function to create sequences
+def create_sequences(data, target, timesteps):
     """
-    Converts an array of values into a dataset matrix suitable for time series prediction.
-    :param dataset: Array of values (e.g., stock prices, temperature, etc.)
-    :param look_back: Number of previous time steps to use for predicting the next time step
-    :return: dataset matrix (X, y) where X is the input and y is the output
+    Creates sequences for LSTM training.
+    :param data: Feature dataset (NumPy array or DataFrame) of shape (samples, features)
+    :param target: Target array or column (e.g., Close prices) of shape (samples,)
+    :param timesteps: Number of timesteps to include in each sequence
+    :return: Tuple of NumPy arrays (X, y)
     """
-    dataX, dataY = [], []
-    for i in range(len(dataset) - look_back - 1):
-        # Creates input-output pairs for time series prediction
-        a = dataset[i:(i + look_back)]
-        dataX.append(a)
-        dataY.append(dataset[i + look_back])
-    return np.array(dataX), np.array(dataY)
+    X, y = [], []
+    for i in range(len(data) - timesteps):
+        # Extract sequences of features
+        X.append(data[i:i + timesteps])
+        # Extract the target value corresponding to the last timestep in the sequence
+        y.append(target[i + timesteps])
+    return np.array(X), np.array(y)
 
 # Function to create the LSTM model
 def build_lstm_model(input_shape):
     """
-    Builds and compiles an LSTM model for time series forecasting.
-    :param input_shape: Shape of the input data (samples, timesteps, features)
+    Builds and compiles an LSTM model for forecasting the close price.
+    :param input_shape: Shape of the input data (timesteps, features)
     :return: Compiled LSTM model
     """
     model = Sequential()
+    # LSTM layer with 50 units
     model.add(LSTM(units=50, return_sequences=False, input_shape=input_shape))
-    model.add(Dense(1))  # Output layer with 1 unit (for regression)
+    # Dropout for regularization
+    model.add(Dropout(0.2))
+    # Dense layer to predict the close price
+    model.add(Dense(units=1))  
     
+    # Compile the model
     model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
     return model
 
