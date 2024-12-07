@@ -37,3 +37,35 @@ def plot_log_return(log_return_series, bank_name):
     plt.title(f'Log Return de {bank_name} au cours du temps')
     plt.legend()
     plt.show()
+
+def plot_learning_curves(history):
+    """
+    Plots the learning curves for training and validation loss and accuracy.
+    
+    Args:
+    - history: History object returned by model.fit() method.
+    """
+    # Plotting training & validation loss values
+    plt.figure(figsize=(14, 5))
+
+    # Loss plot
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper right')
+
+    # Accuracy plot (if applicable)
+    if 'accuracy' in history.history:
+        plt.subplot(1, 2, 2)
+        plt.plot(history.history['accuracy'], label='Training Accuracy')
+        plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+        plt.title('Model Accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(loc='upper left')
+        
+    plt.tight_layout()
+    plt.show()

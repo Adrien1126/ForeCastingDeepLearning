@@ -153,3 +153,25 @@ def remove_high_and_open_and_low(data, symbols):
     print(f"Taille du DataFrame nettoyé : {cleaned_data.shape}")
 
     return cleaned_data
+
+def data_splitting(data,train_size,test_size,validation_size,gap):
+
+    # Calculate indices
+    train_end = train_size
+    test_start = train_end + gap
+    test_end = test_start + test_size
+    validation_start = test_end + gap
+    validation_end = validation_start + validation_size
+    if validation_end > len(data):
+        raise ValueError("Dataset size is too small for the specified splits and gap.")
+    
+    # Create subsets
+    train_indices = np.arange(0, train_end)
+    test_indices = np.arange(test_start, test_end)
+    validation_indices = np.arange(validation_start, validation_end)
+
+    train = data.iloc[train_indices]
+    test = data.iloc[test_indices]
+    validation = data.iloc[validation_indices]
+
+    return train, test, validation
