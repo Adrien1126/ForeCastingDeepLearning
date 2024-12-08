@@ -2,9 +2,10 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.regularizers import l2
 
 # Function to create sequences
-def create_sequences(data, target, timesteps):
+def create_sequences(data, target_column, timesteps):
     """
     Creates sequences for LSTM training.
     :param data: Feature dataset (NumPy array or DataFrame) of shape (samples, features)
@@ -15,9 +16,9 @@ def create_sequences(data, target, timesteps):
     X, y = [], []
     for i in range(len(data) - timesteps):
         # Extract sequences of features
-        X.append(data[i:i + timesteps])
+        X.append(data.iloc[i:i + timesteps].values)
         # Extract the target value corresponding to the last timestep in the sequence
-        y.append(target[i + timesteps])
+        y.append(data.iloc[i + timesteps][target_column])
     return np.array(X), np.array(y)
 
 # Function to create the LSTM model
@@ -28,24 +29,19 @@ def build_lstm_model(input_shape):
     :return: Compiled LSTM model
     """
     model = Sequential()
-    # LSTM layer with 50 units
-    model.add(LSTM(units=50, return_sequences=False, input_shape=input_shape))
-    # Dropout for regularization
-    model.add(Dropout(0.2))
-    # Dense layer to predict the close price
-    model.add(Dense(units=1))  
-    
-    # Compile the model
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
-    return model
 
-# Function to reshape the data for LSTM model input
-def reshape_data(data, look_back):
-    """
-    Reshapes the dataset to be suitable for LSTM input (samples, time steps, features).
-    :param data: The input dataset (e.g., stock prices, temperature, etc.)
-    :param look_back: Number of previous time steps to use as input features
-    :return: reshaped data for LSTM (samples, timesteps, features)
-    """
-    data = np.reshape(data, (data.shape[0], 1, data.shape[1]))  # Reshape for LSTM [samples, timesteps, features]
-    return data
+    # Première couche LSTM
+    model.add(LSTM(units=32, return_sequences=True, input_shape=input_shape, kernel_regularizer=l2(0.001)))
+    model.add(Dropout(0.3))
+
+    # Deuxième couche LSTM
+    model.add(LSTM(units=32, return_sequences=False, kernel_regularizer=l2(0.001)))
+    model.add(Dropout(0.3))
+
+    # Couche dense pour la prédiction
+    model.add(Dense(units=1))
+
+    # Compiler le modèle
+    model.compile(optimizer='adam', loss='mean_squared_error')
+
+    return model
