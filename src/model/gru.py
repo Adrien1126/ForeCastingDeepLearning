@@ -1,6 +1,6 @@
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import GRU, Dense, Dropout
+from tensorflow.keras.layers import GRU, Dense, Dropout, Input
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
@@ -30,8 +30,10 @@ def build_gru_model(input_shape):
     """
     model = Sequential()
 
+    model.add(Input(shape=input_shape))
+
     # First GRU layer
-    model.add(GRU(units=16, return_sequences=True, input_shape=input_shape, kernel_regularizer=l2(0.01)))
+    model.add(GRU(units=16, return_sequences=True, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.4))
 
     # Second GRU layer

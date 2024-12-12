@@ -1,6 +1,6 @@
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
@@ -30,8 +30,11 @@ def build_lstm_model(input_shape):
     """
     model = Sequential()
 
+    # Input layer to define the input shape
+    model.add(Input(shape=input_shape))
+
     # Première couche LSTM
-    model.add(LSTM(units=16, return_sequences=True, input_shape=input_shape, kernel_regularizer=l2(0.01)))
+    model.add(LSTM(units=16, return_sequences=True, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.4))
 
     # Deuxième couche LSTM
