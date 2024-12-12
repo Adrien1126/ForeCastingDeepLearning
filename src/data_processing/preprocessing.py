@@ -175,3 +175,39 @@ def data_splitting(data,train_size,test_size,validation_size,gap):
     validation = data.iloc[validation_indices]
 
     return train, test, validation
+
+# Function to add moving averages and other engineered features
+def add_features(data, window_sizes=[5, 10, 20]):
+    """
+    Add moving averages and other features to the dataset.
+
+    :param data: DataFrame containing the stock data with at least 'Adj Close' and 'Volume'.
+    :param window_sizes: List of integers representing window sizes for moving averages.
+    :return: DataFrame with added features.
+    """
+    for window in window_sizes:
+        # Moving Average for Adjusted Close Price
+        data[f'ma_close_{window}'] = data['Adj Close'].rolling(window=window).mean()
+        # Moving Average for Volume
+        data[f'ma_volume_{window}'] = data['Volume'].rolling(window=window).mean()
+
+    # Relative Strength Index (RSI)
+    delta = data['Adj Close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    data['RSI'] = 100 - (100 / (1 + rs))
+
+    # Bollinger Bands
+    for window in window_sizes:
+        rolling_mean = data['Adj Close'].rolling(window=window).mean()
+        rolling_std = data['Adj Close'].rolling(window=window).std()
+        data[f'bollinger_upper_{window}'] = rolling_mean + (2 * rolling_std)
+        data[f'bollinger_lower_{window}'] = rolling_mean - (2 * rolling_std)
+
+    # Missing values
+    data=data.infer_objects(copy=False)
+    data=data.ffill()
+    data=data.bfill()
+
+    return data

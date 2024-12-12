@@ -1,15 +1,15 @@
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import GRU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
-# Function to create sequences
+# Function to create sequences (reuse from lstm.py)
 def create_sequences(data, target_column, timesteps):
     """
-    Creates sequences for LSTM training.
+    Creates sequences for GRU training.
     :param data: Feature dataset (NumPy array or DataFrame) of shape (samples, features)
-    :param target: Target array or column (e.g., Close prices) of shape (samples,)
+    :param target_column: Target column (e.g., Close prices)
     :param timesteps: Number of timesteps to include in each sequence
     :return: Tuple of NumPy arrays (X, y)
     """
@@ -21,27 +21,27 @@ def create_sequences(data, target_column, timesteps):
         y.append(data.iloc[i + timesteps][target_column])
     return np.array(X), np.array(y)
 
-# Function to create the LSTM model
-def build_lstm_model(input_shape):
+# Function to create the GRU model
+def build_gru_model(input_shape):
     """
-    Builds and compiles an LSTM model for forecasting the close price.
+    Builds and compiles a GRU model for forecasting the close price.
     :param input_shape: Shape of the input data (timesteps, features)
-    :return: Compiled LSTM model
+    :return: Compiled GRU model
     """
     model = Sequential()
 
-    # Première couche LSTM
-    model.add(LSTM(units=16, return_sequences=True, input_shape=input_shape, kernel_regularizer=l2(0.01)))
+    # First GRU layer
+    model.add(GRU(units=16, return_sequences=True, input_shape=input_shape, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.4))
 
-    # Deuxième couche LSTM
-    model.add(LSTM(units=16, return_sequences=False, kernel_regularizer=l2(0.01)))
+    # Second GRU layer
+    model.add(GRU(units=16, return_sequences=False, kernel_regularizer=l2(0.01)))
     model.add(Dropout(0.4))
 
-    # Couche dense pour la prédiction
+    # Dense layer for prediction
     model.add(Dense(units=1))
 
-    # Compiler le modèle
+    # Compile the model
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     return model
