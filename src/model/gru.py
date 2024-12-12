@@ -33,12 +33,12 @@ def build_gru_model(input_shape):
     model.add(Input(shape=input_shape))
 
     # First GRU layer
-    model.add(GRU(units=16, return_sequences=True, kernel_regularizer=l2(0.01)))
-    model.add(Dropout(0.4))
+    model.add(GRU(units=16, return_sequences=True, kernel_regularizer=l2(0.001)))
+    model.add(Dropout(0.3))
 
     # Second GRU layer
-    model.add(GRU(units=16, return_sequences=False, kernel_regularizer=l2(0.01)))
-    model.add(Dropout(0.4))
+    model.add(GRU(units=16, return_sequences=False, kernel_regularizer=l2(0.001)))
+    model.add(Dropout(0.3))
 
     # Dense layer for prediction
     model.add(Dense(units=1))
