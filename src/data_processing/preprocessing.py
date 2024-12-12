@@ -191,20 +191,6 @@ def add_features(data, window_sizes=[5, 10, 20]):
         # Moving Average for Volume
         data[f'ma_volume_{window}'] = data['Volume'].rolling(window=window).mean()
 
-    # Relative Strength Index (RSI)
-    delta = data['Adj Close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
-    data['RSI'] = 100 - (100 / (1 + rs))
-
-    # Bollinger Bands
-    for window in window_sizes:
-        rolling_mean = data['Adj Close'].rolling(window=window).mean()
-        rolling_std = data['Adj Close'].rolling(window=window).std()
-        data[f'bollinger_upper_{window}'] = rolling_mean + (2 * rolling_std)
-        data[f'bollinger_lower_{window}'] = rolling_mean - (2 * rolling_std)
-
     # Missing values
     data=data.infer_objects(copy=False)
     data=data.ffill()

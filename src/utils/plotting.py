@@ -69,3 +69,33 @@ def plot_learning_curves(history):
         
     plt.tight_layout()
     plt.show()
+
+    import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Function to plot correlation matrix
+def plot_correlation_matrix(data, title='Correlation Matrix'):
+    """
+    Generates and visualizes a correlation matrix for a given dataset.
+
+    :param data: DataFrame containing the dataset
+    :param title: Title of the plot
+    """
+    # Compute the correlation matrix
+    correlation_matrix = data.corr()
+
+    # Set up the matplotlib figure
+    plt.figure(figsize=(12, 8))
+
+    # Draw the heatmap with Seaborn
+    sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm', linewidths=0.5)
+
+    # Add title and labels
+    plt.title(title, fontsize=16)
+    plt.xticks(fontsize=10, rotation=45)
+    plt.yticks(fontsize=10)
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
