@@ -46,7 +46,7 @@ def build_stronger_cnn(input_shape):
 
     # Fully Connected Layers
     model.add(Flatten())
-    model.add(Dense(units=128, activation='relu', kernel_regularizer=l2(0.01)))
+    model.add(Dense(units=128, activation='relu'))
     model.add(Dropout(0.2))
     model.add(Dense(units=1, activation='relu'))  # Ensures output >= 0
 
