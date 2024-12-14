@@ -7,3 +7,4 @@
 # Ignorer tout fichier compilé ou temporaire
 *.pyc
 __pycache__/
+notebooks/Test.ipynb
