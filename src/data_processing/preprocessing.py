@@ -197,3 +197,36 @@ def add_features(data, window_sizes=[5, 10, 20]):
     data=data.bfill()
 
     return data
+
+# Function to create sequences
+def create_sequences(data, target_column, timesteps):
+    """
+    Creates sequences for LSTM training.
+    :param data: Feature dataset (NumPy array or DataFrame) of shape (samples, features)
+    :param target: Target array or column (e.g., Close prices) of shape (samples,)
+    :param timesteps: Number of timesteps to include in each sequence
+    :return: Tuple of NumPy arrays (X, y)
+    """
+    X, y = [], []
+    for i in range(len(data) - timesteps):
+        # Extract sequences of features
+        X.append(data.iloc[i:i + timesteps].values)
+        # Extract the target value corresponding to the last timestep in the sequence
+        y.append(data.iloc[i + timesteps][target_column])
+    return np.array(X), np.array(y)
+
+# Function to create sequences based on the forecast horizon 
+def create_multistep_sequences(data, target_column, timesteps, forecast_horizon):
+    """
+    Creates sequences for forecasting multiple steps into the future.
+    :param data: Input DataFrame
+    :param target_column: Column to forecast
+    :param timesteps: Number of timesteps in each sequence
+    :param forecast_horizon: How far into the future to predict
+    :return: Tuple of (X, y)
+    """
+    X, y = [], []
+    for i in range(len(data) - timesteps - forecast_horizon + 1):
+        X.append(data.iloc[i:i + timesteps].values)
+        y.append(data.iloc[i + timesteps + forecast_horizon - 1][target_column])
+    return np.array(X), np.array(y)

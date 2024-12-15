@@ -1,25 +1,7 @@
-import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import GRU, Dense, Dropout, Input
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
-
-# Function to create sequences (reuse from lstm.py)
-def create_sequences(data, target_column, timesteps):
-    """
-    Creates sequences for GRU training.
-    :param data: Feature dataset (NumPy array or DataFrame) of shape (samples, features)
-    :param target_column: Target column (e.g., Close prices)
-    :param timesteps: Number of timesteps to include in each sequence
-    :return: Tuple of NumPy arrays (X, y)
-    """
-    X, y = [], []
-    for i in range(len(data) - timesteps):
-        # Extract sequences of features
-        X.append(data.iloc[i:i + timesteps].values)
-        # Extract the target value corresponding to the last timestep in the sequence
-        y.append(data.iloc[i + timesteps][target_column])
-    return np.array(X), np.array(y)
 
 # Function to create the GRU model
 def build_gru_model(input_shape):
