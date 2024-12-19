@@ -176,10 +176,10 @@ def data_splitting(data,train_size,test_size,validation_size,gap):
 
     return train, test, validation
 
-# Function to add moving averages and other engineered features
+# Function to add moving averages, log returns, and other engineered features
 def add_features(data, window_sizes=[5, 10, 20]):
     """
-    Add moving averages and other features to the dataset.
+    Add moving averages, log returns, and other features to the dataset.
 
     :param data: DataFrame containing the stock data with at least 'Adj Close' and 'Volume'.
     :param window_sizes: List of integers representing window sizes for moving averages.
@@ -191,12 +191,16 @@ def add_features(data, window_sizes=[5, 10, 20]):
         # Moving Average for Volume
         data[f'ma_volume_{window}'] = data['Volume'].rolling(window=window).mean()
 
-    # Missing values
-    data=data.infer_objects(copy=False)
-    data=data.ffill()
-    data=data.bfill()
+    # Add log return as a new column
+    data['log_return'] = np.log(data['Adj Close'] / data['Adj Close'].shift(1))
+
+    # Fill missing values
+    data = data.infer_objects(copy=False)
+    data = data.ffill()
+    data = data.bfill()
 
     return data
+
 
 # Function to create sequences
 def create_sequences(data, target_column, timesteps):
