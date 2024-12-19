@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import GRU, Dense, Dropout, Input
+from tensorflow.keras.layers import GRU, Dense, Dropout, Input, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 
@@ -20,6 +20,44 @@ def build_gru_model(input_shape):
 
     # Second GRU layer
     model.add(GRU(units=16, return_sequences=False, kernel_regularizer=l2(0.001)))
+    model.add(Dropout(0.3))
+
+    # Dense layer for prediction
+    model.add(Dense(units=1))
+
+    # Compile the model
+    model.compile(optimizer='adam', loss='mean_squared_error')
+
+    return model
+
+def build_deep_gru_model(input_shape):
+    """
+    Builds and compiles a deeper GRU model for forecasting the close price.
+    :param input_shape: Shape of the input data (timesteps, features)
+    :return: Compiled GRU model
+    """
+    model = Sequential()
+
+    model.add(Input(shape=input_shape))
+
+    # First GRU layer
+    model.add(GRU(units=64, return_sequences=True, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.3))
+
+    # Second GRU layer
+    model.add(GRU(units=64, return_sequences=True, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.3))
+
+    # Third GRU layer
+    model.add(GRU(units=32, return_sequences=True, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.3))
+
+    # Fourth GRU layer
+    model.add(GRU(units=16, return_sequences=False, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
     model.add(Dropout(0.3))
 
     # Dense layer for prediction
